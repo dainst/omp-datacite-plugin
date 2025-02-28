@@ -220,7 +220,7 @@ class DataciteXmlFilter extends NativeExportFilter
         $rootNode = $doc->createElementNS($deployment->getNamespace(), $deployment->getRootElementName());
         $rootNode->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:xsi', $deployment->getXmlSchemaInstance());
         $rootNode->setAttribute('xsi:schemaLocation', $deployment->getNamespace() . ' ' . $deployment->getSchemaFilename());
-        return $rootNode;
+        return $rootNode; 
     }
 
     /**
@@ -603,18 +603,25 @@ class DataciteXmlFilter extends NativeExportFilter
         /** @var DataciteExportDeployment $deployment */
         $deployment = $this->getDeployment();
         $plugin = $deployment->getPlugin();
+       
         $descriptions = [];
         $descriptions = $chapter ? $chapter->getData('abstract') : $publication->getData('abstract');
-
         $descriptionsNode = null;
         if (!empty($descriptions)) {
-            $descriptions = $this->getPrimaryTranslation($descriptions, $objectLocalePrecedence);
+            // uncomment: Why reducing it to primaryTranslation in case of multiple abstracts in different languages?
+            // $descriptions = $this->getPrimaryTranslation($descriptions, $objectLocalePrecedence);
+
             if (!empty($descriptions)) {
                 $descriptionsNode = $doc->createElementNS($deployment->getNamespace(), 'descriptions');
-                foreach ($descriptions as $description) {
-                    $descriptionsNode->appendChild($node = $doc->createElementNS($deployment->getNamespace(), 'description', htmlspecialchars(PKPString::html2text($description), ENT_COMPAT, 'UTF-8')));
-                    $node->setAttribute('descriptionType', self::DATACITE_DESCTYPE_ABSTRACT);
-                }
+                if(is_array($descriptions)) {
+                    foreach ($descriptions as $langKey => $description) {
+                        if($description !== "") {
+                            $descriptionsNode->appendChild($node = $doc->createElementNS($deployment->getNamespace(), 'description', htmlspecialchars(PKPString::html2text($description), ENT_COMPAT, 'UTF-8')));
+                            $node->setAttribute('descriptionType', self::DATACITE_DESCTYPE_ABSTRACT);
+                            $node->setAttribute('xml:lang', $langKey);
+                        }
+                    }
+                };
             }
         }
         return $descriptionsNode;
@@ -656,7 +663,9 @@ class DataciteXmlFilter extends NativeExportFilter
             $relatedItemNode = $doc->createElementNS($deployment->getNamespace(), 'relatedItem');
             $relatedItemNode->setAttribute('relationType', self::DATACITE_RELTYPE_ISPUBLISHEDIN);
             $relatedItemNode->setAttribute('relatedItemType', 'Book');
+
             $url = $plugin->_getObjectUrl( $request, $context, $publication);
+
             $relatedItemIdentifierNode = $doc->createElementNS($deployment->getNamespace(), 'relatedItemIdentifier', $url);
             $relatedItemIdentifierNode->setAttribute('relatedItemIdentifierType', self::DATACITE_IDTYPE_URL);
             $relatedItemNode->appendChild($relatedItemIdentifierNode);
