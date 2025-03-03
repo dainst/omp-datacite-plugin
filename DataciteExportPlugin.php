@@ -192,6 +192,7 @@ class DataciteExportPlugin extends DOIPubIdExportPlugin {
      */
     public function exportAsDownload(Context $context, array $objects, ?bool $noValidation = null, ?array &$outputErrors = null): ?int
     {
+     
         $fileManager = new TemporaryFileManager();
 
         // Export

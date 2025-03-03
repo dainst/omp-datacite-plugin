@@ -101,7 +101,6 @@ class DatacitePlugin extends GenericPlugin implements IDoiRegistrationAgency
     {
         $exportPlugin = $this->_getExportPlugin();
         $xmlErrors = [];
-
         $items = [];
 
         foreach ($submissions as $submission) {
@@ -117,17 +116,14 @@ class DatacitePlugin extends GenericPlugin implements IDoiRegistrationAgency
                 $chapterDAO = new ChapterDAO();
                 $chapters = $chapterDAO->getByPublicationId($currentPublicationId)->toAssociativeArray();
                 $onlyWithLandingPage = $this->getSetting($context->getId(), DataciteSettings::KEY_ONLY_WITH_LANDINGPAGE);
+
                 /** @var Chapter $chapter */
                 foreach ($chapters as $chapter) {
                     if ($chapter->getDoi()) {
-                        if ($onlyWithLandingPage) { //TODO: Remove this control structure, if omp core only assigns DOIs to chapters with own landing page.
-                            if ($chapter->isPageEnabled() === 1) {
-                                $items[] = $chapter;
-                            }
-                        } else {
+                        $chapterPageEnabled = $chapter->isPageEnabled(); // boolean
+                        if ($chapterPageEnabled) {
                             $items[] = $chapter;
                         }
-
                     }
                 }
             }
@@ -164,7 +160,7 @@ class DatacitePlugin extends GenericPlugin implements IDoiRegistrationAgency
                 }
             }
         }
-
+     
         $temporaryFileId = $exportPlugin->exportAsDownload($context, $items, null, $xmlErrors);
         return ['temporaryFileId' => $temporaryFileId, 'xmlErrors' => $xmlErrors];
     }
@@ -192,17 +188,14 @@ class DatacitePlugin extends GenericPlugin implements IDoiRegistrationAgency
                 $chapterDAO = new ChapterDAO();
                 $chapters = $chapterDAO->getByPublicationId($currentPublicationId)->toAssociativeArray();
                 $onlyWithLandingPage = $this->getSetting($context->getId(), DataciteSettings::KEY_ONLY_WITH_LANDINGPAGE);
+              
                 /** @var Chapter $chapter */
                 foreach ($chapters as $chapter) {
                     if ($chapter->getDoi()) {
-                        if ($onlyWithLandingPage) { //TODO: Remove this control structure, if omp core only assigns DOIs to chapters with own landing page.
-                            if ($chapter->isPageEnabled() === 1) {
-                                $items[] = $chapter;
-                            }
-                        } else {
+                        $chapterPageEnabled = $chapter->isPageEnabled(); // boolean
+                        if ($chapterPageEnabled) {
                             $items[] = $chapter;
                         }
-
                     }
                 }
             }
